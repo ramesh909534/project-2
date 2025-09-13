@@ -20,8 +20,7 @@ jobs:
 
       - name: Build APK
         run: |
-          buildozer init
-          sed -i 's/requirements = python3/requirements = python3,kivy==2.2.1,kivymd==1.1.1,requests,plyer/' buildozer.spec
+          # NOTE: buildozer init remove panniten
           buildozer -v android debug
 
       - name: Upload APK
