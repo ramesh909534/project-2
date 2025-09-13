@@ -4,41 +4,39 @@ title = MyApp
 package.name = myapp
 package.domain = org.test
 
-# Main Python file (entry point)
+# Source files
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
-
-# Main file
 main.py = main.py
 
-# Icon / Presplash (optional)
+# Icon / splash (optional, இருந்தா files சேர்க்கலாம்)
 icon.filename = %(source.dir)s/icon.png
 presplash.filename = %(source.dir)s/presplash.png
 
-# Supported orientations: landscape, portrait or all
+# Orientation
 orientation = portrait
 
-# Permissions
+# Permissions (KivyMD projectsக்கு பொதுவா இதுவே போதும்)
 android.permissions = INTERNET,ACCESS_NETWORK_STATE,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE
 
-# Requirements (உங்க libraries இங்கே list பண்ணணும்)
+# Requirements (உங்க Python libs இங்கே)
 requirements = python3,kivy==2.2.1,kivymd==1.1.1,requests,plyer
 
-# Minimum API / SDK
+# ✅ Version Fix (error remove ஆகும்)
+version = 1.0
+version.regex = 1
+
+# Android settings
 android.api = 31
 android.minapi = 21
-android.ndk = 23b
 android.sdk = 31
-android.ndk_path = 
+android.ndk = 23b
 
-# Output APK name
+# Package version codes
 package.version = 1.0
 package.version.code = 1
 
-# Logcat filter
-log_level = 2
-
-# Fullscreen option
+# Fullscreen off
 fullscreen = 0
 
 
