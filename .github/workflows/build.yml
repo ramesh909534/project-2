@@ -1,42 +1,27 @@
-name: CI
+name: Android Build
+
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # Recommended to use ubuntu-latest for the most up-to-date runner
-
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4  # Changed to v4
-
-      # Used to cache dependencies with a timeout
-      - name: Get Date
-        id: get-date
-        run: |
-          echo "date=$(/bin/date -u "+%Y%m%d")" >> $GITHUB_OUTPUT
-        shell: bash
-
-      - name: Cache Buildozer global directory
-        uses: actions/cache@v4  # Changed to v4
-        with:
-          path: .buildozer_global
-          key: buildozer-global-${{ hashFiles('buildozer.spec') }}
-
-      - uses: actions/cache@v4  # Changed to v4
-        with:
-          path: .buildozer
-          key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('buildozer.spec') }}
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
       - name: Build with Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
-        id: buildozer
+        uses: ArtemSementsov/kivy-android-builder@v1
         with:
-          command: buildozer android debug
-          buildozer_version: stable
+          buildozer_spec_path: ./buildozer.spec
+          python_version: 3.9
+          package_name: your.app.package.name
+          version: 1.0
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4  # Changed to v4
+      - name: Upload APK
+        uses: actions/upload-artifact@v2
         with:
-          name: package
-          path: ${{ steps.buildozer.outputs.filename }}
+          name: app-release-apk
+          path: bin/your.app.package.name-1.0-arm64-v8a-release.apk
