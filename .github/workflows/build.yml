@@ -5,70 +5,45 @@ on:
     branches:
       - main
   pull_request:
-    branches:
-      - main
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-
-    env:
-      ANDROID_HOME: ${{ github.workspace }}/android-sdk
+    runs-on: ubuntu-22.04
 
     steps:
-    # 1️⃣ Checkout repo
-    - name: Checkout repo
-      uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-    # 2️⃣ Setup Python
-    - name: Setup Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: 3.10
+      - name: Install Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y python3-pip python3-dev git unzip openjdk-17-jdk curl build-essential
+          pip3 install --upgrade pip
 
-    # 3️⃣ Install system dependencies
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y unzip curl openjdk-17-jdk git python3-pip build-essential
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.10
 
-    # 4️⃣ Setup Android SDK
-    - name: Setup Android SDK
-      run: |
-        mkdir -p $ANDROID_HOME/cmdline-tools
-        cd $ANDROID_HOME/cmdline-tools
+      - name: Install Buildozer & Cython
+        run: |
+          pip install --upgrade buildozer cython
 
-        # Download Command Line Tools
-        curl -o commandlinetools.zip https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
-        unzip -q commandlinetools.zip
-        mkdir -p latest
-        mv cmdline-tools/* latest/
+      - name: Setup Android SDK
+        run: |
+          mkdir -p $HOME/android-sdk/cmdline-tools
+          cd $HOME/android-sdk/cmdline-tools
+          curl -o commandlinetools.zip https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
+          unzip -q commandlinetools.zip -d latest
+          export ANDROID_HOME=$HOME/android-sdk
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
+          yes | sdkmanager --licenses
+          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+        shell: bash
 
-        # Add sdkmanager to PATH
-        export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
-
-        # Accept licenses
-        yes | sdkmanager --licenses
-
-        # Install stable tools only
-        sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
-
-    # 5️⃣ Install Buildozer
-    - name: Install Buildozer
-      run: |
-        python3 -m pip install --upgrade pip
-        pip install cython==0.29.36 buildozer==1.4.4
-
-    # 6️⃣ Build APK
-    - name: Build APK
-      run: |
-        export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
-        buildozer android debug
-        ls -la bin/
-
-    # 7️⃣ Upload APK
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: myapp-apk
-        path: bin/*.apk
+      - name: Build APK
+        run: |
+          export ANDROID_HOME=$HOME/android-sdk
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
+          buildozer -v android debug
+        shell: bash
