@@ -10,18 +10,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4 # Use the latest version
+
+      - name: Set up Python
+        uses: actions/setup-python@v5 # Use a modern Python setup action
+        with:
+          python-version: '3.10'
+
+      - name: Install Buildozer and dependencies
+        run: |
+          pip install buildozer
+          # Install necessary system packages for Android build tools
+          sudo apt-get update
+          sudo apt-get install -y build-essential python3-pip git zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5
 
       - name: Build with Buildozer
-        uses: ArtemSementsov/kivy-android-builder@v1
-        with:
-          buildozer_spec_path: ./buildozer.spec
-          python_version: 3.9
-          package_name: your.app.package.name
-          version: 1.0
-
+        run: buildozer android debug # This command will build your APK
+        
       - name: Upload APK
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4 # Update to v4
         with:
-          name: app-release-apk
-          path: bin/your.app.package.name-1.0-arm64-v8a-release.apk
+          name: my-kivymd-app-apk
+          path: bin/*.apk # The path where Buildozer saves the APK
+          overwrite: true # Optional: overwrite the artifact if it already exists
