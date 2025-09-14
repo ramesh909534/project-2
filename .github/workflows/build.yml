@@ -14,11 +14,10 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Install Dependencies
+      - name: Install OS Dependencies
         run: |
           sudo apt update
-          sudo apt install -y python3-pip python3-dev git unzip openjdk-17-jdk curl build-essential
-          pip3 install --upgrade pip
+          sudo apt install -y python3-pip python3-dev git unzip openjdk-17-jdk curl build-essential tar wget
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -27,13 +26,14 @@ jobs:
 
       - name: Install Buildozer & Cython
         run: |
+          pip install --upgrade pip
           pip install --upgrade buildozer cython
 
       - name: Setup Android SDK
         run: |
           mkdir -p $HOME/android-sdk/cmdline-tools
           cd $HOME/android-sdk/cmdline-tools
-          curl -o commandlinetools.zip https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
+          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O commandlinetools.zip
           unzip -q commandlinetools.zip -d latest
           export ANDROID_HOME=$HOME/android-sdk
           export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
