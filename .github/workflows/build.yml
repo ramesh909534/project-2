@@ -1,4 +1,4 @@
-name: Build APK
+name: Build KivyMD APK
 
 on:
   push:
@@ -11,37 +11,49 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.11"
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
 
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y python3-pip zip unzip openjdk-17-jdk
-        pip install --upgrade pip
-        pip install buildozer cython==0.29.36
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential git zip unzip openjdk-17-jdk python3-pip
+          pip install --upgrade pip
+          pip install buildozer cython virtualenv
 
-    - name: Buildozer init (skip if exists)
-      run: |
-        if [ ! -f buildozer.spec ]; then
-          buildozer init
-        fi
+      - name: Install Android SDK + Accept Licenses
+        run: |
+          mkdir -p ~/.android
+          yes | sdkmanager --licenses || true
+          yes | sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
-    - name: Accept Android SDK Licenses
-      run: |
-        yes | $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
+      - name: Set environment variables
+        run: |
+          echo "ANDROID_HOME=$HOME/.buildozer/android/platform/android-sdk" >> $GITHUB_ENV
+          echo "PATH=$ANDROID_HOME/build-tools/34.0.0:$ANDROID_HOME/platform-tools:$PATH" >> $GITHUB_ENV
 
-    - name: Build APK
-      run: |
-        buildozer -v android debug
+      - name: Initialize Buildozer
+        run: |
+          if [ ! -f buildozer.spec ]; then
+            buildozer init
+          fi
+          sed -i 's/requirements = python3/requirements = python3,kivy==2.2.1,kivymd==1.1.1,requests,plyer/' buildozer.spec
+          sed -i 's/^# *android.api =.*/android.api = 34/' buildozer.spec
+          sed -i 's/^# *android.build_tools_version =.*/android.build_tools_version = 34.0.0/' buildozer.spec
+          sed -i 's/^# *android.ndk =.*/android.ndk = 25c/' buildozer.spec
+          sed -i 's/^# *android.archs =.*/android.archs = arm64-v8a,armeabi-v7a/' buildozer.spec
 
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: myapp-apk
-        path: bin/*.apk
+      - name: Build APK
+        run: |
+          buildozer -v android debug
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kivymd-apk
+          path: bin/*.apk
