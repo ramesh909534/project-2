@@ -1,17 +1,17 @@
-name: Build APK
+name: Build KivyMD APK
 
 on:
   push:
     branches:
       - main
-  pull_request:
+  workflow_dispatch:
 
 jobs:
-  build:
+  build-apk:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repo
+    - name: Checkout Repository
       uses: actions/checkout@v4
 
     - name: Setup Python
@@ -19,10 +19,11 @@ jobs:
       with:
         python-version: '3.10'
 
-    - name: Install dependencies
+    - name: Install Dependencies
       run: |
-        sudo apt-get update
-        sudo apt-get install -y python3-pip python3-venv unzip curl openjdk-17-jdk build-essential
+        python -m pip install --upgrade pip
+        pip install cython==0.29.36
+        pip install buildozer kivy kivymd plyer
 
     - name: Setup Android SDK
       run: |
@@ -35,22 +36,17 @@ jobs:
         mkdir -p latest
         mv cmdline-tools/* latest/
 
-        # Export SDK paths
-        echo "export ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
-        echo "export PATH=$HOME/android-sdk/cmdline-tools/latest/bin:$HOME/android-sdk/platform-tools:$PATH" >> $GITHUB_ENV
+        # Set PATH only for this step
+        export ANDROID_HOME=$HOME/android-sdk
+        export PATH=$HOME/android-sdk/cmdline-tools/latest/bin:$HOME/android-sdk/platform-tools:$PATH
 
-    - name: Accept Android licenses & install packages
-      run: |
-        source $GITHUB_ENV
+        # Accept licenses and install SDK components
         yes | sdkmanager --licenses
         sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
-    - name: Install Buildozer
-      run: |
-        python3 -m pip install --upgrade pip
-        python3 -m pip install buildozer cython
-
     - name: Build APK
       run: |
-        source $GITHUB_ENV
+        export ANDROID_HOME=$HOME/android-sdk
+        export PATH=$HOME/android-sdk/cmdline-tools/latest/bin:$HOME/android-sdk/platform-tools:$PATH
+
         buildozer android debug
