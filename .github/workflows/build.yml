@@ -22,22 +22,29 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y build-essential git zip unzip openjdk-17-jdk python3-pip
+          sudo apt install -y build-essential git zip unzip openjdk-17-jdk python3-pip curl
           pip install --upgrade pip
           pip install buildozer cython virtualenv
 
       - name: Install Android SDK + Accept Licenses
         run: |
-          mkdir -p ~/.android
+          # Download Android Command Line Tools
+          sudo mkdir -p /usr/lib/android-sdk/cmdline-tools
+          cd /usr/lib/android-sdk/cmdline-tools
+          sudo curl -o sdk-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
+          sudo unzip -q sdk-tools.zip -d tools
+          export ANDROID_HOME=$HOME/.buildozer/android/platform/android-sdk
+          export PATH=$PATH:/usr/lib/android-sdk/cmdline-tools/tools/bin
+          # Accept licenses and install stable versions
           yes | sdkmanager --licenses || true
           yes | sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
       - name: Set environment variables
         run: |
           echo "ANDROID_HOME=$HOME/.buildozer/android/platform/android-sdk" >> $GITHUB_ENV
-          echo "PATH=$ANDROID_HOME/build-tools/34.0.0:$ANDROID_HOME/platform-tools:$PATH" >> $GITHUB_ENV
+          echo "PATH=/usr/lib/android-sdk/cmdline-tools/tools/bin:$ANDROID_HOME/build-tools/34.0.0:$ANDROID_HOME/platform-tools:$PATH" >> $GITHUB_ENV
 
-      - name: Initialize Buildozer
+      - name: Prepare buildozer.spec
         run: |
           if [ ! -f buildozer.spec ]; then
             buildozer init
