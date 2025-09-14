@@ -20,12 +20,12 @@ jobs:
       - name: Install Buildozer and its Python dependencies
         run: |
           pip install buildozer
-          pip install Cython # Cython is a crucial dependency for Python-for-Android
+          pip install Cython
 
       - name: Install system dependencies for Android build
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential python3-pip git openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw6-dev libtinfo-dev libffi-dev libssl-dev
+          sudo apt-get install -y build-essential python3-pip git openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncurses-dev libffi-dev libssl-dev
 
       - name: Configure and build with Buildozer
         run: buildozer android debug
