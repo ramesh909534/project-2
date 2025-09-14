@@ -25,7 +25,7 @@ jobs:
       - name: Install system dependencies for Android build
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential python3-pip git openjdk-17-jdk autoconf automake libtool-bin pkg-config zlib1g-dev libncurses5-dev libncurses-dev libffi-dev libssl-dev
+          sudo apt-get install -y build-essential python3-pip git openjdk-17-jdk autoconf automake libtool pkg-config zlib1g-dev libncurses5-dev libncurses-dev libffi-dev libssl-dev
 
       - name: Accept Android SDK licenses
         run: |
