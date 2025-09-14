@@ -10,26 +10,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4 # Use the latest version
+        uses: actions/checkout@v4 # Use the latest version of the checkout action
 
       - name: Set up Python
         uses: actions/setup-python@v5 # Use a modern Python setup action
         with:
-          python-version: '3.10'
+          python-version: '3.10' # Ensure a compatible Python version
 
-      - name: Install Buildozer and dependencies
+      - name: Install Buildozer and system dependencies
         run: |
+          # Install Buildozer via pip
           pip install buildozer
-          # Install necessary system packages for Android build tools
+          
+          # Update package lists and install necessary system packages
+          # for Android build tools. This is a crucial step.
+          # Note: 'libtinfo5' has been replaced with 'libncursesw6-dev'
+          # to be compatible with modern Ubuntu (24.04+) runners.
           sudo apt-get update
-          sudo apt-get install -y build-essential python3-pip git zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5
+          sudo apt-get install -y build-essential python3-pip git zlib1g-dev libncurses5-dev libncursesw6-dev libtinfo-dev
 
-      - name: Build with Buildozer
-        run: buildozer android debug # This command will build your APK
-        
-      - name: Upload APK
-        uses: actions/upload-artifact@v4 # Update to v4
+      - name: Configure and build with Buildozer
+        run: buildozer android debug # This command will build your APK based on buildozer.spec
+
+      - name: Upload APK as an artifact
+        uses: actions/upload-artifact@v4 # Use the latest version of the upload action
         with:
           name: my-kivymd-app-apk
-          path: bin/*.apk # The path where Buildozer saves the APK
+          path: bin/*.apk # The path where Buildozer saves the generated APK
           overwrite: true # Optional: overwrite the artifact if it already exists
